@@ -8,13 +8,13 @@ pub struct Credentials {
     pub secret: String,
 }
 
+pub struct AppState {
+    pub db: DatabaseConnection,
+}
+
 pub enum AuthError {
     InvalidCredentials,
     Unauthorized,
-}
-
-pub struct AppState {
-    pub db: DatabaseConnection,
 }
 
 impl IntoResponse for AuthError {

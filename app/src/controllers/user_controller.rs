@@ -1,4 +1,7 @@
-use crate::models::{AppState, AuthError, Credentials};
+use crate::{
+    models::{AppState, AuthError, Credentials},
+    services::user_service,
+};
 use axum::{
     extract::{Path, State},
     http::StatusCode,
@@ -14,27 +17,23 @@ use std::sync::Arc;
 pub async fn get_user(
     State(state): State<Arc<AppState>>,
     Path(id): Path<i32>,
-) -> impl IntoResponse {
-    let db = &state.db;
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+    let user = user_service::get_user(&state.db, id).await;
 
-    let user = user::Entity::find_by_id(id)
-        .into_model::<UserNoSecrets>()
-        .one(db)
-        .await;
-
-    let user = if let Ok(Some(user)) = user {
-        user
+    if let Some(user) = user {
+        return Ok(Json(json!({
+          "success": true,
+          "user": UserNoSecrets::from(user)
+        })));
     } else {
-        return Json(json!({
-            "success": false,
-            "message": "Couldnt find user"
-        }));
-    };
-
-    Json(json!({
-        "success": true,
-        "user": user
-    }))
+        return Err((
+            StatusCode::NOT_FOUND,
+            Json(json!({
+              "success": false,
+              "message": format!("User with ID {id} not found.")
+            })),
+        ));
+    }
 }
 
 pub async fn create_user(
@@ -63,16 +62,29 @@ pub async fn create_user(
     }
 }
 
-pub async fn get_all_users(State(state): State<Arc<AppState>>) -> Json<Value> {
-    let db = &state.db;
+pub async fn get_all_users(
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+    let users = user_service::get_all_users(&state.db).await;
 
-    let users = user::Entity::find()
-        .into_model::<UserNoSecrets>()
-        .all(db)
-        .await
-        .unwrap();
+    let users = if let Some(users) = users {
+        users
+    } else {
+        return Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({
+              "success": false,
+              "message": "Error retrieving users"
+            })),
+        ));
+    };
 
-    Json(json!({ "users": users }))
+    let users: Vec<UserNoSecrets> = users.into_iter().map(UserNoSecrets::from).collect();
+
+    Ok(Json(json!({
+      "success": true,
+      "users": users
+    })))
 }
 
 pub async fn login(
