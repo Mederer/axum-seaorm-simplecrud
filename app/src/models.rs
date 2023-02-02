@@ -1,4 +1,5 @@
 use axum::{http::StatusCode, response::IntoResponse};
+use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -10,6 +11,10 @@ pub struct Credentials {
 pub enum AuthError {
     InvalidCredentials,
     Unauthorized,
+}
+
+pub struct AppState {
+    pub db: DatabaseConnection,
 }
 
 impl IntoResponse for AuthError {
