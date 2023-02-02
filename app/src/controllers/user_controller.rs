@@ -8,7 +8,7 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use entity::user::{self, NewUser, UserNoSecrets};
+use entity::user::{self, Model, NewUser, UserNoSecrets};
 use migration::Condition;
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
 use serde_json::{json, Value};
