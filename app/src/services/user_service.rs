@@ -45,10 +45,7 @@ pub async fn delete_user(db: &DatabaseConnection, id: i32) -> Result<(), AppErro
     let user = user::Entity::find_by_id(id).one(db).await?;
 
     if let Some(user) = user {
-        match user.delete(db).await {
-            Err(err) => println!("{}", err.to_string()),
-            _ => (),
-        }
+        user.delete(db).await?;
         return Ok(());
     } else {
         return Err(AppError::EntityNotFound);
