@@ -32,6 +32,9 @@ impl From<DbErr> for AppError {
 pub enum AuthError {
     InvalidCredentials,
     Unauthorized,
+    InvalidToken,
+    TokenCreation,
+    MissingToken,
 }
 
 impl IntoResponse for AuthError {
@@ -45,6 +48,15 @@ impl IntoResponse for AuthError {
                 "You are not authorized to access this content.",
             )
                 .into_response(),
+            AuthError::InvalidToken => {
+                (StatusCode::UNAUTHORIZED, "Given token is invalid.").into_response()
+            }
+            AuthError::TokenCreation => (
+                StatusCode::UNAUTHORIZED,
+                "Error occured during token creation.",
+            )
+                .into_response(),
+            AuthError::MissingToken => (StatusCode::UNAUTHORIZED, "Missing token").into_response(),
         }
     }
 }

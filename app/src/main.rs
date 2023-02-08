@@ -6,7 +6,7 @@ use sea_orm::Database;
 use std::{error::Error, net::SocketAddr, sync::Arc};
 use tracing::info;
 
-use app::controllers::{post_controller, user_controller};
+use app::controllers::{auth_controller, post_controller, user_controller};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -49,9 +49,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
         post(post_controller::create_post).get(post_controller::get_all_posts),
     );
 
+    let auth_router = Router::new().route("/", post(auth_controller::authorize));
+
     let app = Router::new()
         .nest("/user", user_router)
         .nest("/post", post_router)
+        .nest("/auth", auth_router)
         .with_state(state)
         .fallback(|| async { (StatusCode::NOT_FOUND, "Resource was not found.") });
 
