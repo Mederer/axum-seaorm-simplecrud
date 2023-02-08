@@ -2,7 +2,7 @@
 
 use std::fmt::Display;
 
-use sea_orm::{entity::prelude::*, FromQueryResult};
+use sea_orm::{entity::prelude::*, ActiveValue, FromQueryResult};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize)]
@@ -30,6 +30,17 @@ pub struct NewUser {
     pub lastname: String,
     pub email: String,
     pub secret: String,
+}
+
+impl NewUser {
+    pub fn new(firstname: &str, lastname: &str, email: &str, secret: &str) -> Self {
+        Self {
+            firstname: firstname.to_owned(),
+            lastname: lastname.to_owned(),
+            email: email.to_owned(),
+            secret: secret.to_owned(),
+        }
+    }
 }
 
 impl From<Model> for UserNoSecrets {

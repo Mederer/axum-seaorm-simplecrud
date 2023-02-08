@@ -1,170 +1,72 @@
 use crate::{
-    models::{AppState, AuthError, Credentials},
+    models::{errors::AppError, AppState},
     services::user_service,
 };
 use axum::{
     extract::{Path, State},
-    http::StatusCode,
-    response::IntoResponse,
     Json,
 };
-use entity::user::{self, Model, NewUser, UserNoSecrets};
-use migration::Condition;
-use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
+use entity::user::{NewUser, UserNoSecrets};
 use serde_json::{json, Value};
 use std::sync::Arc;
 
 pub async fn get_user(
     State(state): State<Arc<AppState>>,
     Path(id): Path<i32>,
-) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
-    let user = user_service::get_user(&state.db, id).await;
+) -> Result<Json<Value>, AppError> {
+    let user = user_service::get_user(&state.db, id).await?;
 
-    if let Some(user) = user {
-        return Ok(Json(json!({
-          "success": true,
-          "user": UserNoSecrets::from(user)
-        })));
-    } else {
-        return Err((
-            StatusCode::NOT_FOUND,
-            Json(json!({
-              "success": false,
-              "message": format!("User with ID {id} not found.")
-            })),
-        ));
-    }
+    Ok(Json(json!({
+        "success": true,
+        "user": UserNoSecrets::from(user)
+    })))
 }
 
 pub async fn create_user(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<NewUser>,
-) -> Result<Json<Value>, StatusCode> {
-    let db = &state.db;
+    Json(new_user): Json<NewUser>,
+) -> Result<Json<Value>, AppError> {
+    let new_user = user_service::create_user(&state.db, new_user).await?;
 
-    let new_user = user::ActiveModel {
-        firstname: Set(payload.firstname),
-        lastname: Set(payload.lastname),
-        email: Set(payload.email),
-        secret: Set(payload.secret),
-        ..Default::default()
-    }
-    .insert(db)
-    .await;
-
-    if let Ok(new_user) = new_user {
-        return Ok(Json(json!({
-            "status": "success",
-            "user": UserNoSecrets::from(new_user)
-        })));
-    } else {
-        return Err(StatusCode::INTERNAL_SERVER_ERROR);
-    }
+    Ok(Json(json!({
+        "success": true,
+        "new_user": UserNoSecrets::from(new_user)
+    })))
 }
 
-pub async fn get_all_users(
-    State(state): State<Arc<AppState>>,
-) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
-    let users = user_service::get_all_users(&state.db).await;
-
-    let users = if let Some(users) = users {
-        users
-    } else {
-        return Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(json!({
-              "success": false,
-              "message": "Error retrieving users"
-            })),
-        ));
-    };
+pub async fn get_all_users(State(state): State<Arc<AppState>>) -> Result<Json<Value>, AppError> {
+    let users = user_service::get_all_users(&state.db).await?;
 
     let users: Vec<UserNoSecrets> = users.into_iter().map(UserNoSecrets::from).collect();
 
     Ok(Json(json!({
-      "success": true,
-      "users": users
+        "success": true,
+        "users": users
     })))
-}
-
-pub async fn login(
-    State(state): State<Arc<AppState>>,
-    Json(credentials): Json<Credentials>,
-) -> Result<Json<Value>, AuthError> {
-    let db = &state.db;
-
-    let user = user::Entity::find()
-        .filter(
-            Condition::all()
-                .add(user::Column::Email.eq(credentials.email))
-                .add(user::Column::Secret.eq(credentials.secret)),
-        )
-        .into_model::<UserNoSecrets>()
-        .one(db)
-        .await;
-
-    if let Ok(Some(user)) = user {
-        return Ok(Json(json!({
-            "status": "success",
-            "message": "Successful login",
-            "user": user,
-        })));
-    } else {
-        return Err(AuthError::InvalidCredentials);
-    }
 }
 
 pub async fn update_user(
     State(state): State<Arc<AppState>>,
     Json(updated_user): Json<UserNoSecrets>,
-) -> Result<Json<Value>, impl IntoResponse> {
-    let db = &state.db;
+) -> Result<Json<Value>, AppError> {
+    let updated_user: UserNoSecrets = user_service::update_user(&state.db, updated_user)
+        .await?
+        .into();
 
-    let user = user::Entity::find_by_id(updated_user.id).one(db).await;
-    let user = if let Ok(Some(user)) = user {
-        user
-    } else {
-        return Err((StatusCode::NOT_FOUND, "User not found"));
-    };
-    let mut user: user::ActiveModel = user.into();
-    user.firstname = Set(updated_user.firstname);
-    user.lastname = Set(updated_user.lastname);
-    user.email = Set(updated_user.email);
-    let user = user.update(db).await;
-
-    if let Ok(user) = user {
-        return Ok(Json(json!({
-            "success": true,
-            "user": user,
-        })));
-    } else {
-        Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "An error occured while processing this request.",
-        ))
-    }
+    Ok(Json(json!({
+        "success": true,
+        "updated_user": updated_user
+    })))
 }
 
 pub async fn delete_user(
     State(state): State<Arc<AppState>>,
     Path(id): Path<i32>,
-) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
-    let db = &state.db;
+) -> Result<Json<Value>, AppError> {
+    user_service::delete_user(&state.db, id).await?;
 
-    let result = user::Entity::delete_by_id(id).exec(db).await.unwrap();
-
-    if result.rows_affected > 0 {
-        Ok(Json(json!({
-            "success": true,
-            "message": format!("User {id} deleted.")
-        })))
-    } else {
-        Err((
-            StatusCode::NOT_FOUND,
-            Json(json!({
-                "success": false,
-                "message": "User not found."
-            })),
-        ))
-    }
+    Ok(Json(json!({
+        "success": true,
+        "message": format!("User {id} deleted.")
+    })))
 }

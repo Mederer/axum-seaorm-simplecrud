@@ -19,9 +19,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
 
-    let db = Database::connect(db_url)
-        .await
-        .expect("Error connecting to database!");
+    let db = Database::connect(db_url).await.expect(
+        "Unable to connect to database. Check your 'DATABASE_URL' var and ensure the database is running.",
+    );
 
     let state = Arc::new(AppState { db });
 
@@ -32,7 +32,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .post(user_controller::create_user)
                 .put(user_controller::update_user),
         )
-        .route("/login", post(user_controller::login))
         .route(
             "/:id",
             delete(user_controller::delete_user).get(user_controller::get_user),
