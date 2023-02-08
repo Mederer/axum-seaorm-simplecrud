@@ -2,7 +2,7 @@
 
 use std::fmt::Display;
 
-use sea_orm::{entity::prelude::*, ActiveValue, FromQueryResult};
+use sea_orm::{entity::prelude::*, FromQueryResult};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize)]

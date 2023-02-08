@@ -1,6 +1,6 @@
 use app::models::AppState;
 use axum::http::StatusCode;
-use axum::routing::{delete, get, post};
+use axum::routing::{delete, get};
 use axum::Router;
 use sea_orm::Database;
 use std::{error::Error, net::SocketAddr, sync::Arc};
