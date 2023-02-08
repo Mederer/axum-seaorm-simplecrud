@@ -29,6 +29,12 @@ impl From<DbErr> for AppError {
     }
 }
 
+impl From<AuthError> for AppError {
+    fn from(value: AuthError) -> Self {
+        Self::AuthError(value)
+    }
+}
+
 pub enum AuthError {
     InvalidCredentials,
     Unauthorized,

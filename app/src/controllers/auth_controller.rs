@@ -12,7 +12,7 @@ pub async fn authorize(
     let token = auth_service::authorize(&state.db, credentials).await?;
 
     Ok(Json(json!({
-      "success": true,
-      "token": token
+        "success": true,
+        "token": token
     })))
 }

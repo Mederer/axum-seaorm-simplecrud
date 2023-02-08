@@ -63,7 +63,7 @@ where
             .await
             .map_err(|_| AuthError::MissingToken)?;
 
-        let claims = decode_token(bearer.token().to_string())?;
+        let claims = decode_token(bearer.token())?;
 
         Ok(claims)
     }

@@ -8,18 +8,16 @@ use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, Qu
 pub async fn get_posts_by_user_id(db: &DatabaseConnection, id: i32) -> Result<Vec<Post>, AppError> {
     let user = user::Entity::find_by_id(id).one(db).await?;
 
-    let user = if let Some(user) = user {
-        user
+    if let Some(user) = user {
+        let posts = post::Entity::find()
+            .filter(post::Column::UserId.eq(user.id))
+            .all(db)
+            .await?;
+
+        Ok(posts)
     } else {
-        return Err(AppError::EntityNotFound);
-    };
-
-    let posts = post::Entity::find()
-        .filter(post::Column::UserId.eq(user.id))
-        .all(db)
-        .await?;
-
-    Ok(posts)
+        Err(AppError::EntityNotFound)
+    }
 }
 
 pub async fn create_post(db: &DatabaseConnection, new_post: NewPost) -> Result<Post, AppError> {

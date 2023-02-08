@@ -24,9 +24,10 @@ pub async fn authorize(
         .await?;
 
     if let Some(user) = user {
-        let token = create_token(user.id.to_string().as_str()).unwrap();
+        let token =
+            create_token(user.id.to_string().as_str()).map_err(|_| AuthError::TokenCreation)?;
         Ok(token)
     } else {
-        Err(AppError::AuthError(AuthError::InvalidCredentials))
+        Err(AuthError::InvalidCredentials.into())
     }
 }
