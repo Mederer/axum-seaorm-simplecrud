@@ -1,5 +1,6 @@
-pub use entity::post::Model as Post;
 use serde::Deserialize;
+
+pub use entity::post::Model as Post;
 
 #[derive(Deserialize)]
 pub struct NewPost {

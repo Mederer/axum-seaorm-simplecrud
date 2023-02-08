@@ -4,6 +4,7 @@ use axum::routing::{delete, get, post};
 use axum::Router;
 use sea_orm::Database;
 use std::{error::Error, net::SocketAddr, sync::Arc};
+use tracing::info;
 
 use app::controllers::{post_controller, user_controller};
 
@@ -12,7 +13,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     dotenvy::dotenv().expect("Error reading environment variables.");
 
     tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::DEBUG)
+        .with_max_level(tracing::Level::INFO)
         .with_test_writer()
         .init();
 
@@ -43,7 +44,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         )
         .route("/:id/post", get(user_controller::get_posts));
 
-    let post_router = Router::new().route("/", post(post_controller::create_post));
+    let post_router = Router::new().route(
+        "/",
+        post(post_controller::create_post).get(post_controller::get_all_posts),
+    );
 
     let app = Router::new()
         .nest("/user", user_router)
@@ -51,7 +55,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .with_state(state)
         .fallback(|| async { (StatusCode::NOT_FOUND, "Resource was not found.") });
 
-    println!("Listening on {port}");
+    info!("Listening on port {port}");
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await?;
