@@ -1,7 +1,8 @@
-use entity::user::{self, Model as User, NewUser, UserNoSecrets};
+use entity::user;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, ModelTrait, Set};
 
 use crate::models::errors::AppError;
+use crate::models::user::{NewUser, User, UserNoSecrets};
 
 pub async fn get_user(db: &DatabaseConnection, id: i32) -> Result<User, AppError> {
     let user = user::Entity::find_by_id(id).one(db).await?;
@@ -44,7 +45,10 @@ pub async fn delete_user(db: &DatabaseConnection, id: i32) -> Result<(), AppErro
     let user = user::Entity::find_by_id(id).one(db).await?;
 
     if let Some(user) = user {
-        user.delete(db).await?;
+        match user.delete(db).await {
+            Err(err) => println!("{}", err.to_string()),
+            _ => (),
+        }
         return Ok(());
     } else {
         return Err(AppError::EntityNotFound);

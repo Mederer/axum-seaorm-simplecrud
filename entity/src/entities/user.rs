@@ -2,8 +2,8 @@
 
 use std::fmt::Display;
 
-use sea_orm::{entity::prelude::*, FromQueryResult};
-use serde::{Deserialize, Serialize};
+use sea_orm::entity::prelude::*;
+use serde::Serialize;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize)]
 #[sea_orm(table_name = "user")]
@@ -14,44 +14,6 @@ pub struct Model {
     pub lastname: String,
     pub email: String,
     pub secret: String,
-}
-
-#[derive(Serialize, FromQueryResult, Deserialize)]
-pub struct UserNoSecrets {
-    pub id: i32,
-    pub firstname: String,
-    pub lastname: String,
-    pub email: String,
-}
-
-#[derive(Deserialize)]
-pub struct NewUser {
-    pub firstname: String,
-    pub lastname: String,
-    pub email: String,
-    pub secret: String,
-}
-
-impl NewUser {
-    pub fn new(firstname: &str, lastname: &str, email: &str, secret: &str) -> Self {
-        Self {
-            firstname: firstname.to_owned(),
-            lastname: lastname.to_owned(),
-            email: email.to_owned(),
-            secret: secret.to_owned(),
-        }
-    }
-}
-
-impl From<Model> for UserNoSecrets {
-    fn from(value: Model) -> Self {
-        Self {
-            id: value.id,
-            firstname: value.firstname,
-            lastname: value.lastname,
-            email: value.email,
-        }
-    }
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

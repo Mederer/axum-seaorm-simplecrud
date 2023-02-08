@@ -1,12 +1,12 @@
+use crate::models::user::{NewUser, UserNoSecrets};
 use crate::{
     models::{errors::AppError, AppState},
-    services::user_service,
+    services::{post_service, user_service},
 };
 use axum::{
     extract::{Path, State},
     Json,
 };
-use entity::user::{NewUser, UserNoSecrets};
 use serde_json::{json, Value};
 use std::sync::Arc;
 
@@ -68,5 +68,17 @@ pub async fn delete_user(
     Ok(Json(json!({
         "success": true,
         "message": format!("User {id} deleted.")
+    })))
+}
+
+pub async fn get_posts(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<i32>,
+) -> Result<Json<Value>, AppError> {
+    let posts = post_service::get_posts_by_user_id(&state.db, id).await?;
+
+    Ok(Json(json!({
+        "success": true,
+        "posts": posts,
     })))
 }

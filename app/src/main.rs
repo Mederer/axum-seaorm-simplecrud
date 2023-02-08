@@ -1,15 +1,20 @@
 use app::models::AppState;
 use axum::http::StatusCode;
-use axum::routing::{delete, get};
+use axum::routing::{delete, get, post};
 use axum::Router;
 use sea_orm::Database;
 use std::{error::Error, net::SocketAddr, sync::Arc};
 
-use app::controllers::user_controller;
+use app::controllers::{post_controller, user_controller};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     dotenvy::dotenv().expect("Error reading environment variables.");
+
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .with_test_writer()
+        .init();
 
     let db_url = dotenvy::var("DATABASE_URL").expect("No 'DATABASE_URL' var set.");
     let port: u16 = dotenvy::var("PORT")
@@ -35,14 +40,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .route(
             "/:id",
             delete(user_controller::delete_user).get(user_controller::get_user),
-        );
+        )
+        .route("/:id/post", get(user_controller::get_posts));
+
+    let post_router = Router::new().route("/", post(post_controller::create_post));
 
     let app = Router::new()
         .nest("/user", user_router)
+        .nest("/post", post_router)
         .with_state(state)
-        .fallback(|| async { (StatusCode::NOT_FOUND, "Resource was not found") });
+        .fallback(|| async { (StatusCode::NOT_FOUND, "Resource was not found.") });
 
-    println!("Listening on {}", port);
+    println!("Listening on {port}");
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await?;

@@ -1,4 +1,6 @@
 pub mod errors;
+pub mod post;
+pub mod user;
 
 use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize};
