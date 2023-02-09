@@ -5,7 +5,7 @@ use axum::{
     http::request::Parts,
     RequestPartsExt, TypedHeader,
 };
-use jsonwebtoken::{DecodingKey, EncodingKey};
+use jsonwebtoken::{get_current_timestamp, DecodingKey, EncodingKey};
 use serde::{Deserialize, Serialize};
 
 use crate::helpers::decode_token;
@@ -45,7 +45,7 @@ impl Claims {
     pub fn new(sub: &str) -> Self {
         Self {
             sub: sub.to_owned(),
-            exp: 2000000000,
+            exp: (get_current_timestamp() + 60 * 60 * 24 * 3) as usize,
         }
     }
 }

@@ -29,7 +29,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         "Unable to connect to database. Check your 'DATABASE_URL' var and ensure the database is running.",
     );
 
-    let state = Arc::new(AppState { db });
+    let state = Arc::new(AppState::new(db));
 
     let user_router = Router::new()
         .route(

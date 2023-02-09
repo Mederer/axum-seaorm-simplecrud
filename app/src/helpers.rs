@@ -9,10 +9,7 @@ use crate::models::{
 static TOKEN_KEYS: Lazy<Keys> = Lazy::new(Keys::build);
 
 pub fn create_token(sub: &str) -> Result<String, AuthError> {
-    let claim = Claims {
-        sub: sub.to_owned(),
-        exp: 10000000000,
-    };
+    let claim = Claims::new(sub);
 
     let token = encode(&Header::default(), &claim, &TOKEN_KEYS.encoding_key)
         .map_err(|_| AuthError::TokenCreation)?;

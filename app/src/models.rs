@@ -11,4 +11,10 @@ pub struct AppState {
     pub db: DatabaseConnection,
 }
 
+impl AppState {
+    pub fn new(db: DatabaseConnection) -> Self {
+        Self { db }
+    }
+}
+
 pub type StateType = State<Arc<AppState>>;
