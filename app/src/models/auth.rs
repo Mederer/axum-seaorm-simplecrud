@@ -23,8 +23,8 @@ impl Keys {
             dotenvy::var("TOKEN_KEY").expect("Error reading 'TOKEN_KEY' environment var");
 
         Self {
-            encoding_key: EncodingKey::from_secret(&token_key.as_bytes()),
-            decoding_key: DecodingKey::from_secret(&token_key.as_bytes()),
+            encoding_key: EncodingKey::from_secret(token_key.as_bytes()),
+            decoding_key: DecodingKey::from_secret(token_key.as_bytes()),
         }
     }
 }

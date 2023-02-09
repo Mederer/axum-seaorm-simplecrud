@@ -38,7 +38,7 @@ pub async fn update_user(
 
     let user = user.update(db).await?;
 
-    return Ok(user);
+    Ok(user)
 }
 
 pub async fn delete_user(db: &DatabaseConnection, id: i32) -> Result<(), AppError> {
@@ -46,10 +46,10 @@ pub async fn delete_user(db: &DatabaseConnection, id: i32) -> Result<(), AppErro
 
     if let Some(user) = user {
         user.delete(db).await?;
-        return Ok(());
+        Ok(())
     } else {
-        return Err(AppError::EntityNotFound);
-    };
+        Err(AppError::EntityNotFound)
+    }
 }
 
 pub async fn create_user(db: &DatabaseConnection, new_user: NewUser) -> Result<User, AppError> {

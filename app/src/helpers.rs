@@ -6,7 +6,7 @@ use crate::models::{
     errors::AuthError,
 };
 
-const TOKEN_KEYS: Lazy<Keys> = Lazy::new(|| Keys::build());
+static TOKEN_KEYS: Lazy<Keys> = Lazy::new(Keys::build);
 
 pub fn create_token(sub: &str) -> Result<String, AuthError> {
     let claim = Claims {
@@ -21,7 +21,7 @@ pub fn create_token(sub: &str) -> Result<String, AuthError> {
 }
 
 pub fn decode_token(token: &str) -> Result<Claims, AuthError> {
-    let decoded = decode::<Claims>(&token, &TOKEN_KEYS.decoding_key, &Validation::default())
+    let decoded = decode::<Claims>(token, &TOKEN_KEYS.decoding_key, &Validation::default())
         .map_err(|_| AuthError::InvalidToken)?;
 
     Ok(decoded.claims)
