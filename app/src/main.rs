@@ -22,6 +22,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .expect("No 'PORT' var set.")
         .parse()
         .expect("Invalid 'PORT' var set.");
+    dotenvy::var("TOKEN_KEY").expect("No 'TOKEN_KEY' var set.");
 
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
 
@@ -49,7 +50,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         post(post_controller::create_post).get(post_controller::get_all_posts),
     );
 
-    let auth_router = Router::new().route("/", post(auth_controller::authorize));
+    let auth_router = Router::new().route("/authorize", post(auth_controller::authorize));
 
     let app = Router::new()
         .nest("/user", user_router)

@@ -18,9 +18,8 @@ pub struct Keys {
 }
 
 impl Keys {
-    pub fn build() -> Keys {
-        let token_key =
-            dotenvy::var("TOKEN_KEY").expect("Error reading 'TOKEN_KEY' environment var");
+    pub fn build() -> Self {
+        let token_key = dotenvy::var("TOKEN_KEY").expect("No 'TOKEN_KEY' var set.");
 
         Self {
             encoding_key: EncodingKey::from_secret(token_key.as_bytes()),

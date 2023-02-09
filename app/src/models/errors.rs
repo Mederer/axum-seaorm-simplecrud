@@ -25,7 +25,7 @@ impl IntoResponse for AppError {
 
 impl From<DbErr> for AppError {
     fn from(value: DbErr) -> Self {
-        AppError::DbError(value)
+        Self::DbError(value)
     }
 }
 
