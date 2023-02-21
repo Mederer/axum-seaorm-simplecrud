@@ -41,6 +41,7 @@ pub enum AuthError {
     InvalidToken,
     TokenCreation,
     MissingToken,
+    EmailExists,
 }
 
 impl IntoResponse for AuthError {
@@ -63,6 +64,7 @@ impl IntoResponse for AuthError {
             )
                 .into_response(),
             AuthError::MissingToken => (StatusCode::UNAUTHORIZED, "Missing token").into_response(),
+            AuthError::EmailExists => (StatusCode::BAD_REQUEST, "Email exists").into_response(),
         }
     }
 }

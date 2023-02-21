@@ -53,12 +53,13 @@ pub async fn get_all_users(
 
 pub async fn update_user(
     State(state): StateType,
-    _claims: Claims,
+    claims: Claims,
     Json(updated_user): Json<UserNoSecrets>,
 ) -> Result<Json<Value>, AppError> {
-    let updated_user: UserNoSecrets = user_service::update_user(&state.db, updated_user)
-        .await?
-        .into();
+    let updated_user: UserNoSecrets =
+        user_service::update_user(&state.db, updated_user, claims.sub)
+            .await?
+            .into();
 
     Ok(Json(json!({
         "success": true,

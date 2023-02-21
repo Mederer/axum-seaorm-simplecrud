@@ -1,3 +1,4 @@
+insert into "user" (firstname, lastname, email, secret) values ('Mitchell', 'Dederer', 'mitchelldederer@gmail.com', 'password');
 insert into "user" (firstname, lastname, email, secret) values ('Eberto', 'Kerman', 'ekerman0@chronoengine.com', '36e346c743558567e43816a0caa550c9b51b9296');
 insert into "user" (firstname, lastname, email, secret) values ('Derron', 'Bremmell', 'dbremmell1@miibeian.gov.cn', '36e346c743558567e43816a0caa550c9b51b9296');
 insert into "user" (firstname, lastname, email, secret) values ('Doti', 'Gatesman', 'dgatesman2@tripod.com', '36e346c743558567e43816a0caa550c9b51b9296');

@@ -1,12 +1,14 @@
-use app::models::AppState;
-use axum::http::StatusCode;
+use axum::http::{self, Method, StatusCode};
 use axum::routing::{delete, get, post};
 use axum::Router;
 use sea_orm::Database;
+use std::vec;
 use std::{error::Error, net::SocketAddr, sync::Arc};
+use tower_http::cors::{Any, CorsLayer};
 use tracing::info;
 
 use app::controllers::{auth_controller, post_controller, user_controller};
+use app::models::AppState;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -57,7 +59,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .nest("/post", post_router)
         .nest("/auth", auth_router)
         .with_state(state)
-        .fallback(|| async { (StatusCode::NOT_FOUND, "Resource was not found.") });
+        .fallback(|| async { (StatusCode::NOT_FOUND, "Resource was not found.") })
+        .layer(
+            CorsLayer::new()
+                .allow_origin(Any)
+                .allow_methods(vec![Method::POST, Method::GET, Method::PUT, Method::DELETE])
+                .allow_headers(vec![
+                    http::header::CONTENT_TYPE,
+                    http::header::AUTHORIZATION,
+                ]),
+        );
 
     info!("Listening on port {port}");
     axum::Server::bind(&addr)
